@@ -1,30 +1,21 @@
 import { TemplateLoader } from './_helpers/template-loader';
+import { PeopleService } from './services/people-service';
 class Main {
-	#peoples = [
-		{
-			lastname: 'Smith',
-			firstname: 'Robert',
-			band: 'The Cure',
-		},
-		{
-			lastname: 'Idol',
-			firstname: 'Billy',
-			band: 'Generation X',
-		},
-		{
-			lastname: 'Hagen',
-			firstname: 'Nina',
-			band: 'Nina Hagen',
-		},
-		{
-			lastname: 'Vicious',
-			firstname: 'Sid',
-			band: 'Sex Pistols',
-		},
-	];
+	#peoples = [];
+
+	/**
+	 * PeopleService
+	 */
+	#service = null;
 
 	constructor() {
+		this.#service = new PeopleService();
+		this.#peoples = this.#service.peoples;
 		this.#run();
+	}
+
+	get peoples() {
+		return this.#peoples;
 	}
 
 	#run() {
@@ -117,16 +108,51 @@ class Main {
 }
 
 // Self callable function to run the Main class
+let app;
 (function () {
-	const app = new Main();
+	app = new Main();
 })();
 
 // Event listener for the main checkbox
 document.getElementById('main-checkbox').addEventListener('click', (event) => {
 	const checkbox = event.target;
+	const itemCheckboxes = document.getElementsByClassName('item-checkbox');
+
+	// Toggle
+	let checkOrUncheck = false;
+
 	if (checkbox.checked) {
-		console.log('Have to ckeck all lines');
-	} else {
-		console.log('Have to unckeck all lines');
+		checkOrUncheck = true;
+	}
+
+	for (const checkbox of itemCheckboxes) {
+		checkbox.checked = checkOrUncheck;
+	}
+});
+
+// Event listener for the tbody element
+const tbody = document.querySelector('tbody');
+tbody.addEventListener('click', (event) => {
+	// console.log(`Click was detected on ${event.target.tagName}`);
+	if (event.target.tagName === 'INPUT') {
+		const checkbox = event.target;
+		// Ensure is the good checkbox
+		if (checkbox.classList.contains('item-checkbox')) {
+			const mainCheckBox = document.getElementById('main-checkbox');
+			if (checkbox.checked === false) {
+				mainCheckBox.checked = false;
+			} else {
+				const itemCheckboxes = Array.from(
+					document.getElementsByClassName('item-checkbox')
+				);
+				const checkedItems = itemCheckboxes.filter(
+					(itemCheckbox) => itemCheckbox.checked
+				);
+
+				mainCheckBox.checked = !(
+					checkedItems.length - app.peoples.length
+				);
+			}
+		}
 	}
 });
